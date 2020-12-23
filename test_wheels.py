@@ -4,6 +4,10 @@ import os
 
 from osgeo import ogr, osr
 
+# https://gdal.org/api/python_gotchas.html#python-bindings-do-not-raise-exceptions-unless-you-explicitly-call-useexceptions
+ogr.UseExceptions()
+osr.UseExceptions()
+
 
 def test_env_vars():
     assert 'site-packages/osgeo/gdal_data' in os.environ.get('GDAL_DATA', '')
