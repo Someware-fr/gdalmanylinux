@@ -12,7 +12,8 @@ RUN sed -i 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf \
     && sed -i 's/mirrorlist/#mirrorlist/' /etc/yum.repos.d/CentOS-Base.repo \
     && sed -i 's|#baseurl=http://mirror.centos.org/centos/$releasever|baseurl=http://vault.centos.org/5.11|' /etc/yum.repos.d/CentOS-Base.repo
 
-RUN yum update -y && yum install -y curl-devel json-c-devel zlib-devel libtiff-devel
+RUN yum update -y && yum install -y curl-devel json-c-devel zlib-devel libtiff-devel krb5-devel pam-devel cyrus-sasl-devel
+
 
 # Install openssl
 RUN mkdir -p /src \
@@ -23,7 +24,7 @@ RUN mkdir -p /src \
     && tar zxf openssl-1.0.2o.tar.gz \
     && cd /src/openssl-1.0.2o \
     && ./config no-shared no-ssl2 no-async -fPIC -O2 \
-    && make -j 4 \
+    && make -j 8 \
     && make install \
     && rm -rf /src
 
@@ -34,18 +35,18 @@ RUN mkdir -p /src \
     && tar jxf curl-7.59.0.tar.bz2 \
     && cd /src/curl-7.59.0 \
     && LIBS=-ldl CFLAGS="-O2 -Wl,-S" ./configure --with-ssl=/usr/local/ssl \
-    && make -j 4 \
+    && make -j 8 \
     && make install \
     && rm -rf /src
 
 # Install geos
 RUN mkdir -p /src \
     && cd /src \
-    && curl -f -L -O http://download.osgeo.org/geos/geos-3.6.3.tar.bz2 \
-    && tar jxf geos-3.6.3.tar.bz2 \
-    && cd /src/geos-3.6.3 \
+    && curl -f -L -O http://download.osgeo.org/geos/geos-3.8.1.tar.bz2 \
+    && tar jxf geos-3.8.1.tar.bz2 \
+    && cd /src/geos-3.8.1 \
     && CFLAGS="-O2 -Wl,-S" CXXFLAGS="-O2 -Wl,-S" ./configure \
-    && make -j 4 \
+    && make -j 8 \
     && make install \
     && rm -rf /src
 
@@ -56,18 +57,18 @@ RUN mkdir -p /src \
     && tar xzf jasper-1.900.1.uuid.tar.gz \
     && cd /src/jasper-1.900.1.uuid \
     && ./configure --disable-debug --enable-shared \
-    && make -j 4 \
+    && make -j 8 \
     && make install \
     && rm -rf /src
 
-# proj4
+# proj6
 RUN mkdir -p /src \
     && cd /src \
-    && curl -f -L -O http://download.osgeo.org/proj/proj-4.9.3.tar.gz \
-    && tar xzf proj-4.9.3.tar.gz \
-    && cd /src/proj-4.9.3 \
+    && curl -f -L -O http://download.osgeo.org/proj/proj-6.3.1.tar.gz \
+    && tar xzf proj-6.3.1.tar.gz \
+    && cd /src/proj-6.3.1 \
     && ./configure CFLAGS="-O2 -Wl,-S" \
-    && make -j 4 \
+    && make -j 8 \
     && make install \
     && rm -rf /src
 
@@ -77,7 +78,7 @@ RUN cd /usr/local/src \
     && tar xzf cmake-3.11.1.tar.gz \
     && cd cmake-3.11.1 \
     && ./bootstrap --prefix=/usr/local/cmake \
-    && make -j 4; make install
+    && make -j 8; make install
 
 # openjpeg
 RUN mkdir -p /src \
@@ -88,17 +89,17 @@ RUN mkdir -p /src \
     && mkdir -p build \
     && cd build \
     && /usr/local/cmake/bin/cmake .. -DBUILD_THIRDPARTY:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local \
-    && make -j 4 install \
+    && make -j 8 install \
     && make clean \
     && rm -rf /src
 
 # hdf
 RUN cd /usr/local/src \
-    && curl -f -L -O https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.2/src/hdf5-1.10.2.tar.gz \
-    && tar xzf hdf5-1.10.2.tar.gz \
-    && cd hdf5-1.10.2 \
+    && curl -f -L -O https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz \
+    && tar xzf hdf5-1.12.0.tar.gz \
+    && cd hdf5-1.12.0 \
     && ./configure --prefix=/usr/local --enable-shared --enable-build-mode=production CFLAGS="-O2 -Wl,-S" \
-    && make -j 4 \
+    && make -j 8 \
     && make install
 
 ## netcdf
@@ -107,7 +108,7 @@ RUN cd /usr/local/src \
     && tar xzf netcdf-4.6.1.tar.gz \
     && cd netcdf-4.6.1 \
     && CFLAGS="-I/usr/local/include -O2 -Wl,-S" CXXFLAGS="-I/usr/local/include -O2 -Wl,-S" LDFLAGS="-L/usr/local/lib" ./configure \
-    && make -j 4 \
+    && make -j 8 \
     && make install
 
 ## expat
@@ -116,7 +117,7 @@ RUN cd /usr/local/src \
     && tar xjf expat-2.2.5.tar.bz2 \
     && cd expat-2.2.5 \
     && CFLAGS="-O2 -Wl,-S" ./configure --prefix=/usr/local \
-    && make -j 4 \
+    && make -j 8 \
     && make install
 
 ## webp
@@ -125,15 +126,20 @@ RUN cd /usr/local/src \
     && tar xzf libwebp-0.6.1.tar.gz \
     && cd libwebp-0.6.1 \
     && CFLAGS="-O2 -Wl,-S" ./configure --prefix=/usr/local \
-    && make -j 4 \
+    && make -j 8 \
     && make install
+
+## libpq
+ADD build_pg.sh /tmp/build_pg.sh
+RUN cd /usr/local/src \
+    && bash -x /tmp/build_pg.sh
 
 # gdal
 RUN mkdir -p /src \
     && cd /src \
-    && curl -f -L -O http://download.osgeo.org/gdal/2.4.0/gdal-2.4.0.tar.gz \
-    && tar xzf gdal-2.4.0.tar.gz \
-    && cd /src/gdal-2.4.0 \
+    && curl -f -L -O https://github.com/OSGeo/gdal/releases/download/v3.1.4/gdal-3.1.4.tar.gz \
+    && tar xzf gdal-3.1.4.tar.gz \
+    && cd /src/gdal-3.1.4 \
     && CFLAGS="-O2 -Wl,-S" CXXFLAGS="-O2 -Wl,-S" ./configure \
         --with-threads \
         --disable-debug \
@@ -154,7 +160,7 @@ RUN mkdir -p /src \
         --with-grib \
         --with-pam \
         --with-geos=/usr/local/bin/geos-config \
-        --with-static-proj4=/usr/local \
+        --with-proj=/usr/local \
         --with-expat=/usr/local \
         --with-libjson-c \
         --with-libiconv-prefix=/usr \
@@ -163,10 +169,11 @@ RUN mkdir -p /src \
         --with-netcdf=/usr/local/netcdf \
         --with-openjpeg \
         --with-jasper=/usr/local \
+        --with-pg \
         --without-python \
-        --without-hdf4 \
         --without-hdf5 \
-    && make -j 4 \
+        --without-hdf4 \
+    && make -j 8 \
     && make install
 
 # Bake dev requirements into the Docker image for faster builds
@@ -181,12 +188,12 @@ RUN for PYBIN in /opt/python/*/bin; do \
 
 # Replace SWIG's setup.py with this modified one, which gets numpy in
 # there as a dependency.
-ADD setup.py /src/gdal-2.4.0/swig/python/setup.py
+ADD setup.py /src/gdal-3.1.4/swig/python/setup.py
 
 # Replace the osgeo module __init__.py with this modified one, which
 # sets the GDAL_DATA and PROJ_LIB variables on import to where they've
 # been copied to.
-ADD gdalinit.py /src/gdal-2.4.0/swig/python/osgeo/__init__.py
+ADD gdalinit.py /src/gdal-3.1.4/swig/python/osgeo/__init__.py
 
 WORKDIR /io
 CMD ["/io/build-linux-wheels.sh"]
