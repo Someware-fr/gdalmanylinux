@@ -14,6 +14,10 @@ To build, clone this repo, navigate to its root and run `make wheels`.  The cont
 
 The resulting wheels have the gdal and proj data directories packaged up inside of them, but you can set the appropriate environment viaraibles to use your own data directories. 
 
+## Test the Wheels
+
+Some basic tests can be run, assuming tox is installed, running the command `make tests`.
+
 ## Using the Wheels
 
 These may be `pip` installed into your linux environment ad nauseam.  For example, from the directory containing the 'wheels' directory, you can run
