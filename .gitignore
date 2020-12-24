@@ -1,1 +1,3 @@
 /wheels
+.tox/
+__pycache__
